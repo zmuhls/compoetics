@@ -1,0 +1,15 @@
+<body id="$" onload="
+  let t = 0, weight = 1;
+  setInterval(() => {
+    t++;
+    weight = Math.abs(Math.sin(t / 50)) * 100; // Weight oscillates smoothly between 0 and 100
+    document.getElementById('$').style.fontSize = 9 + weight + 'px'; // Adjust font size dynamically
+    let c = '';
+    for (let i = 10000; i > 0; i--) {
+      const charCode = Math.random() < 0.02 ? Math.floor(10000 + Math.random() * 8000) : 32;
+      c += `&#${charCode};`;
+    }
+    document.getElementById('$').innerHTML = c;
+  }, 99);
+">
+<div id="$"></div>

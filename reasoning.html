@@ -1,0 +1,830 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Token Scroll</title>
+  <style>
+    :root {
+      --bg-color: #f5f5f5;
+      --fg-color: #111111;
+      --text-l: 35%;
+      --trail-color: rgba(0,0,0,0.3);
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background: var(--bg-color);
+      color: var(--fg-color);
+      font-family: sans-serif;
+      line-height: 1.15;
+      overflow-x: hidden;
+      transition: background 0.6s ease, color 0.6s ease;
+    }
+
+    body.dark-mode {
+      --bg-color: #222222;
+      --fg-color: #eeeeee;
+      --text-l: 80%;
+      --trail-color: rgba(255,255,255,0.2);
+    }
+
+    #toggle-theme {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      z-index: 10000;
+      padding: 0.5rem 1rem;
+      background: #888;
+      border: none;
+      color: #fff;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+
+    #toggle-theme:hover {
+      opacity: 0.8;
+    }
+
+    #text-container {
+      position: relative;
+      width: 90%;
+      max-width: 800px;
+      margin: 0 auto;
+      padding-top: 8vh;
+      padding-bottom: 200vh; /* extra space for scrolling */
+    }
+
+    .token {
+      position: relative;
+      display: block;
+      margin: 7vh 0;
+      text-align: center;
+      opacity: 0.9;
+      transition: transform 0.2s ease, opacity 0.4s ease, color 0.4s ease;
+      will-change: transform, opacity, color;
+      white-space: pre-wrap;
+      color: hsl(var(--h, 0), var(--s, 100%), var(--text-l));
+    }
+
+    .active {
+      transform: scale(1.2);
+      opacity: 1;
+    }
+
+    .num-trail {
+      pointer-events: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      z-index: 9999;
+    }
+
+    .num {
+      position: absolute;
+      color: var(--trail-color);
+      font-size: 2vw;
+      user-select: none;
+      animation: fadeOut 1s forwards ease;
+    }
+
+    @keyframes fadeOut {
+      0% {
+        opacity: 1;
+      }
+      100% {
+        opacity: 0;
+        transform: translateY(-50%) scale(0.2);
+      }
+    }
+
+    @media (max-width: 600px) {
+      .token {
+        margin: 8vh 0;
+        font-size: 1.1em;
+      }
+      .num {
+        font-size: 4vw;
+      }
+    }
+  </style>
+</head>
+<body class="light-mode">
+
+<button id="toggle-theme">toggle theme</button>
+
+<div id="text-container"></div>
+
+<div class="num-trail" id="numTrail"></div>
+
+<script>
+/* reference text */
+let referenceText = `
+Okay, so I need to solve this proportion problem: 33136 divided by 32557 equals x divided by 138114. Hmm, proportions. Right, proportions are basically two ratios that are equal to each other. So if I have a/b = c/d, then I can cross-multiply to solve for the unknown variable. Let me remember how cross-multiplication works. If a/b = c/d, then a*d = b*c. Yeah, that sounds right.
+
+So applying that here, 33136 over 32557 equals x over 138114. That should mean 33136 multiplied by 138114 equals 32557 multiplied by x. Then, to solve for x, I can divide both sides by 32557. Let me write that down step by step.
+
+First, write the equation as given:
+
+33136 / 32557 = x / 138114
+
+Cross-multiplying gives:
+
+33136 * 138114 = 32557 * x
+
+So, x = (33136 * 138114) / 32557
+
+Now, I need to compute this. Let me see. The numerator is 33136 multiplied by 138114, and then divide that product by 32557. That might be a big number. Let me check if there's a way to simplify this before multiplying everything out. Maybe some factors can cancel out. Let's see.
+
+Looking at the numbers: 33136 and 32557. Are these numbers related in any way? Maybe 33136 divided by 32557 is a ratio that can be simplified? Let me check if they have a common divisor.
+
+First, let's see if both numbers are divisible by 2. 33136 is even, so yes. 32557 is odd, so no. So 2 isn't a common divisor. How about 3? Let's add the digits of 33136: 3+3+1+3+6=16. 16 isn't divisible by 3. 32557: 3+2+5+5+7=22. 22 isn't divisible by 3. So 3 isn't a divisor. Next, 5? The last digit of 33136 is 6, so no. 32557 ends with 7, so no. 7? Let's check 33136 divided by 7. 7 goes into 33 four times (28), remainder 5. Bring down 1: 51. 7*7=49, remainder 2. Bring down 3: 23. 7*3=21, remainder 2. Bring down 6: 26. 7*3=21, remainder 5. So 33136/7 is not an integer. 32557 divided by 7? 7 into 32 is 4, remainder 4. 45 divided by 7 is 6, remainder 3. 35 divided by 7 is 5, remainder 0. 7 into 7 is 1. Wait, let me do that properly.
+
+Wait, maybe I should use a calculator for divisibility tests, but since I don't have one, maybe this is too time-consuming. Alternatively, maybe 33136 and 32557 are close in value. Let me subtract them: 33136 - 32557 = 579. Hmm, so they are 579 apart. Not sure if that helps. Alternatively, maybe 33136 is 32557 plus 579. Maybe there's a percentage increase or something, but not sure.
+
+Alternatively, since the problem is 33136/32557 = x/138114, maybe I can compute 33136 divided by 32557 first, get a decimal, and then multiply by 138114 to find x. That might be straightforward, even if the numbers are big. Let me try that.
+
+First, compute 33136 / 32557. Let me do that division. Let's see, 32557 goes into 33136 how many times? Well, 32557 times 1 is 32557. Subtract that from 33136: 33136 - 32557 = 579. So, 33136 / 32557 = 1 + 579/32557. So that's approximately 1.0178 (since 579/32557 is roughly 0.0178). Let me check: 32557 * 0.0178 ≈ 32557 * 0.01 = 325.57, plus 32557 * 0.0078 ≈ 253. So total ≈ 325.57 + 253 ≈ 578.57, which is close to 579, so that's correct. So 33136 / 32557 ≈ 1.0178.
+
+Therefore, x ≈ 1.0178 * 138114. Let's compute that. 138114 * 1 = 138114, 138114 * 0.0178 ≈ 138114 * 0.01 = 1381.14, plus 138114 * 0.0078 ≈ 138114 * 0.007 = 966.798, and 138114 * 0.0008 = 110.4912. Adding those together: 1381.14 + 966.798 ≈ 2347.938 + 110.4912 ≈ 2458.4292. So total x ≈ 138114 + 2458.43 ≈ 140,572.43. But since the original numbers are all whole numbers, maybe x should be a whole number as well. So perhaps my approximation is off, or maybe there's an exact value.
+
+Wait, maybe I should do the exact calculation instead of approximating. Let's try that. So x = (33136 * 138114) / 32557.
+
+First, multiply 33136 by 138114. Let me break this down. 33136 * 138114. That's a big multiplication. Let me see if I can simplify this by factoring.
+
+Alternatively, notice that 138114 divided by 32557 might have a common factor. Let me check if 138114 and 32557 have a common divisor.
+
+Let me check 32557 and 138114. Let's compute GCD(32557, 138114). Using the Euclidean algorithm.
+
+First, divide 138114 by 32557. How many times does 32557 go into 138114?
+
+32557 * 4 = 130,228
+
+Subtract that from 138114: 138,114 - 130,228 = 7,886
+
+Now, compute GCD(32557, 7,886)
+
+Divide 32557 by 7,886. 7,886 * 4 = 31,544. Subtract from 32,557: 32,557 - 31,544 = 1,013
+
+Now, GCD(7,886, 1,013)
+
+Divide 7,886 by 1,013. 1,013 * 7 = 7,091. Subtract: 7,886 - 7,091 = 795
+
+GCD(1,013, 795)
+
+Divide 1,013 by 795. 795 *1 =795. Subtract: 1,013 -795=218
+
+GCD(795,218)
+
+795 divided by 218 is 3*218=654. Subtract: 795-654=141
+
+GCD(218,141)
+
+218 divided by 141=1*141=141. Subtract:218-141=77
+
+GCD(141,77)
+
+141 divided by 77=1*77=77. Subtract:141-77=64
+
+GCD(77,64)
+
+77-64=13
+
+GCD(64,13)
+
+64 divided by13=4*13=52. Subtract:64-52=12
+
+GCD(13,12)
+
+13-12=1
+
+GCD(12,1)
+
+12 divided by1=12, remainder 0. So GCD is 1.
+
+Therefore, 32557 and 138114 are coprime? Wait, that can't be. Because in the original proportion, 33136/32557 = x/138114. If 32557 and 138114 had a common divisor, maybe we could simplify, but since their GCD is 1, we can't. So perhaps there's a mistake here? Wait, no. The GCD is 1, so they don't share any common factors. So the fraction 138114/32557 cannot be simplified. Therefore, x = (33136 * 138114)/32557. Since there's no simplification, I have to perform the multiplication and division.
+
+Alternatively, maybe 33136 and 32557 have a common factor. Let's check GCD(33136,32557). Using Euclidean algorithm:
+
+Compute GCD(33136,32557). Subtract 32557 from 33136: 33136 - 32557 = 579. Now compute GCD(32557,579).
+
+32557 divided by 579. Let's see, 579 * 56 = 579*50=28,950; 579*6=3,474. So 28,950 + 3,474=32,424. Subtract from 32,557: 32,557 - 32,424=133.
+
+So GCD(579,133). 579 divided by 133. 133*4=532. Subtract:579-532=47.
+
+GCD(133,47). 133 divided by47=2*47=94. Subtract:133-94=39.
+
+GCD(47,39). 47-39=8.
+
+GCD(39,8). 39 divided by8=4*8=32. Subtract:39-32=7.
+
+GCD(8,7). 8-7=1.
+
+GCD(7,1). Which is 1. So GCD(33136,32557)=1. Therefore, the fraction 33136/32557 is in simplest terms.
+
+So, no simplification possible. Therefore, I need to compute 33136 multiplied by 138114, then divide by 32557. Let's tackle the multiplication first.
+
+33136 * 138114. Let's break this down. Let me write 138114 as 138,114. Let's see:
+
+33136 * 100,000 = 3,313,600,000
+
+33136 * 30,000 = 994,080,000
+
+33136 * 8,000 = 265,088,000
+
+33136 * 100 = 3,313,600
+
+33136 * 14 = 463,904
+
+So adding all these together:
+
+3,313,600,000
+
++994,080,000 = 4,307,680,000
+
++265,088,000 = 4,572,768,000
+
++3,313,600 = 4,576,081,600
+
++463,904 = 4,576,545,504
+
+Wait, let me check the breakdown:
+
+138,114 = 100,000 + 30,000 + 8,000 + 100 + 14
+
+So,
+
+33136 * 100,000 = 3,313,600,000
+
+33136 * 30,000 = 33136 * 3 * 10,000 = 99,408 * 10,000 = 994,080,000
+
+33136 * 8,000 = 33136 * 8 * 1,000 = 265,088 * 1,000 = 265,088,000
+
+33136 * 100 = 3,313,600
+
+33136 * 14 = 33136 * 10 + 33136 * 4 = 331,360 + 132,544 = 463,904
+
+Now sum all these:
+
+3,313,600,000
+
++994,080,000 = 4,307,680,000
+
++265,088,000 = 4,572,768,000
+
++3,313,600 = 4,576,081,600
+
++463,904 = 4,576,545,504
+
+So 33136 * 138114 = 4,576,545,504
+
+Now, divide that by 32557. So, 4,576,545,504 ÷ 32557. Let me see.
+
+This is going to be a large division. Let me see if I can simplify this. Maybe do long division, but that would take a while. Alternatively, notice that 32557 * 100,000 = 3,255,700,000. Let's see how many times 32557 goes into 4,576,545,504.
+
+First, approximate. 32557 * 140,000 = 32557 * 100,000 + 32557 * 40,000 = 3,255,700,000 + 1,302,280,000 = 4,557,980,000
+
+Subtract that from 4,576,545,504: 4,576,545,504 - 4,557,980,000 = 18,565,504
+
+Now, 32557 * 500 = 16,278,500
+
+Subtract that: 18,565,504 - 16,278,500 = 2,287,004
+
+32557 * 70 = 2,278,990
+
+Subtract that: 2,287,004 - 2,278,990 = 8,014
+
+32557 goes into 8,014 zero times. So total is 140,000 + 500 + 70 = 140,570, and a remainder of 8,014.
+
+But wait, we need an exact value. Since the original proportion is equal, and all numbers are integers, x should be an integer. Wait, unless there was a mistake in calculation. Hmm. Let me check the multiplication and division again.
+
+Wait, first, double-checking the multiplication: 33136 * 138114.
+
+Let me verify using another method. Let's use the calculator approach.
+
+But since I don't have a calculator, maybe another way. Let me compute 33136 * 138114.
+
+Alternatively, 33136 * 138,114 = 33136 * (100,000 + 38,114). Wait, maybe not helpful. Alternatively, use the distributive property again.
+
+Wait, perhaps I made an error in the earlier addition. Let me re-add the components:
+
+First component: 3,313,600,000
+
+Second component: +994,080,000. Let's add these two:
+
+3,313,600,000 + 994,080,000 = 4,307,680,000
+
+Third component: +265,088,000. So 4,307,680,000 + 265,088,000 = 4,572,768,000
+
+Fourth component: +3,313,600. So 4,572,768,000 + 3,313,600 = 4,576,081,600
+
+Fifth component: +463,904. So 4,576,081,600 + 463,904 = 4,576,545,504. That seems correct.
+
+Now, divide 4,576,545,504 by 32,557. Let's see.
+
+Wait, 32,557 * 140,000 = 32,557 * 100,000 + 32,557 * 40,000 = 3,255,700,000 + 1,302,280,000 = 4,557,980,000
+
+Subtract this from the total: 4,576,545,504 - 4,557,980,000 = 18,565,504
+
+Now, how many times does 32,557 go into 18,565,504?
+
+Divide 18,565,504 by 32,557.
+
+32,557 * 500 = 16,278,500
+
+Subtract: 18,565,504 - 16,278,500 = 2,287,004
+
+32,557 * 70 = 2,278,990
+
+Subtract: 2,287,004 - 2,278,990 = 8,014
+
+32,557 * 0.246 ≈ 8,014 (since 32,557 * 0.2 = 6,511.4; 32,557 * 0.04 = 1,302.28; total ≈ 7,813.68). So approximately 0.246.
+
+But since we need an integer, this suggests that there is a remainder, which conflicts with the original proportion implying x should be a whole number. Therefore, perhaps I made an error in calculation.
+
+Wait, but maybe the original problem has a typo? Or perhaps I miscalculated the multiplication or division. Let me check again.
+
+Wait, perhaps the multiplication is wrong. Let me recalculate 33136 * 138114.
+
+Let me try another method. Let's write both numbers:
+
+33136
+
+times 138114
+
+------------
+
+We can break this into 33136 * (100000 + 30000 + 8000 + 100 + 10 + 4)
+
+But perhaps breaking it down differently:
+
+33136 * 138114 = 33136 * (130000 + 8114)
+
+= 33136 * 130000 + 33136 * 8114
+
+Compute 33136 * 130000:
+
+33136 * 100000 = 3,313,600,000
+
+33136 * 30,000 = 994,080,000
+
+Total: 3,313,600,000 + 994,080,000 = 4,307,680,000
+
+Now compute 33136 * 8114:
+
+First, 33136 * 8000 = 265,088,000
+
+33136 * 114 = ?
+
+Compute 33136 * 100 = 3,313,600
+
+33136 * 14 = 463,904
+
+So 3,313,600 + 463,904 = 3,777,504
+
+Therefore, 33136 * 8114 = 265,088,000 + 3,777,504 = 268,865,504
+
+Now, total multiplication: 4,307,680,000 + 268,865,504 = 4,576,545,504. Same as before. So the multiplication is correct.
+
+Then, dividing 4,576,545,504 by 32,557. Let me check if 32,557 * 140,570 = ?
+
+32,557 * 140,000 = 4,557,980,000
+
+32,557 * 570 = ?
+
+32,557 * 500 = 16,278,500
+
+32,557 * 70 = 2,278,990
+
+Total: 16,278,500 + 2,278,990 = 18,557,490
+
+So total 32,557 * 140,570 = 4,557,980,000 + 18,557,490 = 4,576,537,490
+
+Now, subtract this from 4,576,545,504: 4,576,545,504 - 4,576,537,490 = 8,014
+
+So, 32,557 * 140,570 = 4,576,537,490
+
+Then, adding 8,014 gives 4,576,545,504. Therefore, the division is 140,570 with a remainder of 8,014. Therefore, x = 140,570 + 8,014/32,557. But x should be equal to (33136/32557)*138114. Since all the original numbers are integers, but the result is not an integer? That seems odd. Wait, but proportions don't necessarily result in integers unless the numbers are set up that way. Maybe the problem expects a fractional answer or a decimal. But given the context, maybe it's okay to have a decimal.
+
+Alternatively, perhaps I made a mistake in the division process. Let me verify once again.
+
+We have 4,576,545,504 divided by 32,557.
+
+Let me try dividing step by step.
+
+First, determine how many times 32,557 goes into 4,576,545,504.
+
+But this is a very large number, so maybe breaking it down differently.
+
+Alternatively, note that 32,557 * 100,000 = 3,255,700,000
+
+As before, subtract 3,255,700,000 from 4,576,545,504: 4,576,545,504 - 3,255,700,000 = 1,320,845,504
+
+Now, how many times does 32,557 go into 1,320,845,504?
+
+32,557 * 40,000 = 1,302,280,000
+
+Subtract that: 1,320,845,504 - 1,302,280,000 = 18,565,504
+
+Now, how many times does 32,557 go into 18,565,504?
+
+32,557 * 500 = 16,278,500
+
+Subtract: 18,565,504 - 16,278,500 = 2,287,004
+
+32,557 * 70 = 2,278,990
+
+Subtract: 2,287,004 - 2,278,990 = 8,014
+
+So total multipliers: 100,000 + 40,000 + 500 + 70 = 140,570, with a remainder of 8,014. Therefore, x = 140,570 + 8,014/32,557 ≈ 140,570 + 0.246 ≈ 140,570.246
+
+But since the problem is presented with colons, indicating a proportion, it might expect an exact fractional answer or a rounded decimal. Let me see. If the original numbers are exact, perhaps we need to present the fractional answer. However, 8,014/32,557 can be simplified? Let's check.
+
+Compute GCD(8014, 32557). Using Euclidean algorithm:
+
+32557 ÷ 8014 = 4 times 8014 = 32,056, remainder 32557 - 32,056 = 501
+
+Now, GCD(8014, 501)
+
+8014 ÷ 501 = 16 times 501 = 8,016, remainder 8014 - 8,016 = -2. Wait, that can't be. Wait, 501*16 = 8,016. But 8014 - 8,016 = -2. Hmm, so absolute value is 2. So GCD(501, 2)
+
+501 ÷ 2 = 250 *2 = 500, remainder 1. GCD(2,1)=1. Therefore, the fraction 8,014/32,577 reduces to 8,014/32,557, which cannot be simplified further. Therefore, the exact value of x is 140,570 and 8,014/32,557.
+
+Alternatively, as a decimal, that's approximately 140,570.246. Depending on the problem's requirements, we might need to round it. If it's a practical problem, maybe to two decimal places: 140,570.25. But since the original numbers are integers, perhaps the answer should be a fraction. However, given the context, maybe the problem expects an integer, but our calculation shows there's a remainder. Hmm. Maybe there's an error in my calculations? Let me cross-validate.
+
+Alternatively, maybe the initial proportion was set up incorrectly. Wait, let me check the original problem again: 33136:32557 = x:138114. Yes, that translates to 33136/32557 = x/138114. So cross-multiplying gives 33136*138114 = 32557*x. Therefore, x = (33136*138114)/32557. Which we calculated as 140,570 with remainder 8,014. Therefore, x is not an integer. Therefore, the answer is 140,570.246 approximately.
+
+Alternatively, maybe the problem expects us to present it as a fraction: 4,576,545,504 / 32,557. But that reduces to 140,570 8,014/32,557. But this is messy. Alternatively, maybe there's a calculation mistake. Let me verify using another approach.
+
+Let me try calculating 33136/32557 first, then multiply by 138114.
+
+33136 ÷ 32557. Let me do this division more precisely.
+
+32557 goes into 33136 once, with a remainder of 579, as before. So 33136/32557 = 1 + 579/32557. Now, let's compute 579/32557.
+
+579 ÷ 32557. Let me compute this decimal:
+
+32557 goes into 579 0 times. Add a decimal point, and add a zero: 5790 ÷ 32557 = 0.0...
+
+57900 ÷ 32557 ≈ 1.777 times (since 32557*1=32557, 32557*1.7=32557+22,789.9=55,346.9, which is less than 57,900). Wait, maybe this is too time-consuming.
+
+Alternatively, use approximation:
+
+579/32557 ≈ 579/(32,557) ≈ 579/(32.557 thousand) ≈ 17.78 per thousand ≈ 0.01778. Therefore, 33136/32557 ≈ 1.01778.
+
+Then, multiply by 138,114: 1.01778 * 138,114.
+
+Compute 138,114 * 1 = 138,114
+
+138,114 * 0.01778 ≈ Let's compute 0.01 * 138,114 = 1,381.14
+
+0.007 * 138,114 ≈ 967. (approx 0.007 * 138,114 = 967. 0.007*100,000=700, 0.007*38,114≈266.8, total≈700+266.8≈966.8)
+
+0.00078 * 138,114 ≈ 0.0007*138,114=96.68, 0.00008*138,114=11.05, total≈107.73
+
+Adding these together: 1,381.14 + 966.8 + 107.73 ≈ 2,455.67
+
+Therefore, total x ≈ 138,114 + 2,455.67 ≈ 140,569.67
+
+Which is close to our previous result of approximately 140,570.25. The difference is due to approximation in the decimal places. So, approximately 140,570.25. Depending on rounding, maybe 140,570.25 or 140,570.3.
+
+But since the exact value is 140,570 and 8,014/32,557, which is approximately 140,570.246, so rounding to two decimal places would be 140,570.25.
+
+However, considering the problem might expect an exact fractional answer, but since the remainder is 8,014/32,557, which doesn't simplify, the answer is either the improper fraction 4,576,545,504/32,557 or the mixed number 140,570 8,014/32,557. But these are unwieldy. Alternatively, maybe the problem expects an integer answer, suggesting perhaps I made a miscalculation earlier.
+
+Wait, let me verify the cross-multiplication again. 33136/32557 = x/138114. So x = (33136 * 138114)/32557. Wait, is there any chance that 33136 is a multiple of 32557? Earlier GCD was 1, so no. Therefore, the result can't be simplified. Therefore, unless there is a calculation error, the answer is approximately 140,570.25. However, given that all the original numbers are integers, but the result is not, maybe the problem is designed that way. Therefore, I should present the exact value as a fraction or the approximate decimal.
+
+Given that the user might expect a box around the answer, and considering mathematical problems often prefer exact forms, but this fraction is huge. Alternatively, maybe the multiplication or division was miscalculated. Let me check once again.
+
+Wait, 33136 * 138114: if I compute 33136 * 138,114, perhaps using another multiplication method.
+
+Let me try using prime factors, but that might not help here. Alternatively, use the fact that 138,114 = 2 * 69,057
+
+So, 33136 * 2 = 66,272
+
+Then, 66,272 * 69,057
+
+But 66,272 * 69,057 is still a big number. Maybe not helpful.
+
+Alternatively, 69,057 = 70,000 - 943
+
+So, 66,272 * 70,000 = 4,639,040,000
+
+Subtract 66,272 * 943
+
+Compute 66,272 * 900 = 59,644,800
+
+66,272 * 40 = 2,650,880
+
+66,272 * 3 = 198,816
+
+Total: 59,644,800 + 2,650,880 = 62,295,680 + 198,816 = 62,494,496
+
+So, 4,639,040,000 - 62,494,496 = 4,576,545,504. Same as before. Therefore, the multiplication is confirmed.
+
+Therefore, 33136 * 138114 = 4,576,545,504
+
+Divide by 32,557: 4,576,545,504 ÷ 32,557 = 140,570.246 approximately.
+
+Thus, the exact value is 140,570 and 8,014/32,557, approximately 140,570.25. Depending on the required answer format, perhaps rounding to the nearest whole number is acceptable, but since the remainder is about 0.246, which is less than 0.5, it would round down to 140,570. However, considering the problem might require an exact decimal or fraction, but given the complexity, likely a decimal rounded to two or three places.
+
+Alternatively, perhaps I missed a common factor earlier. Let me check GCD of 8,014 and 32,557 again.
+
+As before, GCD(32,557, 8,014). Using Euclidean algorithm:
+
+32,557 ÷ 8,014 = 4 times, remainder 32,557 - 8,014*4 = 32,557 - 32,056 = 501
+
+GCD(8,014, 501)
+
+8,014 ÷ 501 = 16 times 501 = 8,016, remainder 8,014 - 8,016 = -2. Take absolute value: 2
+
+GCD(501, 2). 501 ÷ 2 = 250 r 1. GCD(2,1)=1. Therefore, the fraction 8,014/32,557 reduces to 8,014/32,557. Therefore, cannot be simplified.
+
+Hence, the answer is either the exact fraction, which is 4,576,545,504/32,557, or the mixed number 140,570 8,014/32,557, or the approximate decimal 140,570.25.
+
+Given the problem is presented with integers, and the result is not an integer, it's likely that a decimal is expected, rounded to a certain number of places. Alternatively, maybe as a fraction. Given that 8,014/32,557 is approximately 0.246, the decimal is approximately 140,570.25.
+
+But to confirm, let's perform the division of 8,014 ÷ 32,557.
+
+32,557 goes into 8,014 0 times. Add decimal: 80,140 ÷ 32,557 ≈ 2.46 times (32,557*2=65,114; subtract from 80,140: 15,026). Bring down next 0: 150,260 ÷ 32,557 ≈ 4.6 times (32,557*4=130,228; subtract:150,260-130,228=20,032). Bring down next 0: 200,320 ÷32,557 ≈6 times (32,557*6=195,342; subtract:200,320-195,342=4,978). And so on. So approximately 0.246.
+
+Therefore, the decimal is 140,570.246, which rounds to 140,570.25 if rounding to two decimal places, or 140,570.2 if rounding to one decimal place. However, since the original problem uses whole numbers, maybe we should present the exact fractional answer, but it's quite a large fraction. Alternatively, maybe leave it as 140570.246.
+
+Alternatively, check if 33136/32557 simplifies to something, but as established earlier, it doesn't. So, I think the most precise answer is 140,570.246, but depending on the context, rounding might be necessary. However, in mathematical problems, unless specified, exact fractions are preferred, but this one is complicated. Alternatively, the problem might have a typo, but assuming it's correct, we have to go with the calculation.
+
+Therefore, after thorough calculation, the value of x is approximately 140,570.25. However, since the problem is presented with integers, maybe we are supposed to give the exact fractional form. But writing 4,576,545,504 over 32,557 is not practical. Alternatively, maybe simplify the fraction by dividing numerator and denominator by GCD(4,576,545,504, 32,557). But given that GCD(33136,32557)=1 and GCD(138114,32557)=1 as per earlier calculation, GCD(4,576,545,504,32,557)=GCD(33136*138114,32557). Since 32557 is a prime number? Wait, is 32557 a prime?
+
+Let me check if 32557 is a prime number. Let's test divisibility by small primes. We checked earlier up to 7, and it wasn't divisible. Let's check higher primes.
+
+Check divisibility by 11: 3 - 2 + 5 - 5 + 7 = 3 -2=1, 1+5=6, 6-5=1, 1+7=8. Not divisible by 11.
+
+13: 32557 ÷13. 13*2500=32,500. 32557 -32,500=57. 57 ÷13=4.38. Not integer.
+
+17: 17*1900=32,300. 32557-32,300=257. 257 ÷17≈15.11. Not integer.
+
+19: 19*1700=32,300. 32557-32,300=257. 257 ÷19≈13.526. Not integer.
+
+23: 23*1400=32,200. 32557-32,200=357. 357 ÷23≈15.52. Not integer.
+
+29: 29*1120=32,480. 32557-32,480=77. 77 ÷29≈2.655. Not integer.
+
+31: 31*1050=32,550. 32557-32,550=7. Not divisible by 31.
+
+37: 37*879=32,523. 32557-32,523=34. Not divisible by 37.
+
+41: 41*794=32,554. 32557-32,554=3. Not divisible by 41.
+
+43: 43*757=32,551. 32557-32,551=6. Not divisible by 43.
+
+47: 47*692=32,524. 32557-32,524=33. Not divisible by 47.
+
+53: 53*614=32,542. 32557-32,542=15. Not divisible by 53.
+
+59: 59*551=32,509. 32557-32,509=48. Not divisible by 59.
+
+61: 61*533=32,513. 32557-32,513=44. Not divisible by 61.
+
+67: 67*485=32,495. 32557-32,495=62. Not divisible by 67.
+
+71: 71*458=32,518. 32557-32,518=39. Not divisible by 71.
+
+73: 73*445=32,485. 32557-32,485=72. 72 ÷73≈0.986. Not divisible.
+
+79: 79*411=32,469. 32557-32,469=88. 88 ÷79≈1.113. Not divisible.
+
+83: 83*391=32,453. 32557-32,453=104. 104 ÷83≈1.253. Not divisible.
+
+89: 89*365=32,485. 32557-32,485=72. Not divisible.
+
+97: 97*335=32,495. 32557-32,495=62. Not divisible.
+
+Therefore, 32557 is a prime number? It seems like it, as we've tested up to sqrt(32557) which is approximately 180. So, since 32557 is a prime number, and it doesn't divide 33136 or 138114, the fraction cannot be simplified further. Therefore, the exact answer is 4,576,545,504 /32,557, which is equal to 140,570 + 8,014/32,557. Since 32557 is prime, and 8,014 < 32,557, the fraction is in simplest terms.
+
+Therefore, the answer is either the exact mixed number or the decimal approximation. Given the context of the problem, likely the decimal approximation is sufficient. So, approximately 140,570.25.
+
+But to verify once again with another method. Let's compute 33136/32557 = x/138114.
+
+Using cross-multiplication:
+
+x = (33136 * 138114)/32557
+
+If I compute this step by step:
+
+First, divide 138114 by 32557. Let's see:
+
+32557 * 4 = 130,228
+
+138,114 - 130,228 = 7,886
+
+So 138,114 = 32557*4 + 7,886
+
+Therefore, x = 33136*(32557*4 +7,886)/32557 = 33136*4 + (33136*7,886)/32557
+
+Compute 33136*4 = 132,544
+
+Now, compute (33136*7,886)/32557
+
+Let me compute 33136*7,886:
+
+Again, this is a large multiplication. 33136*7,886.
+
+Break it down:
+
+33136*7,000 = 231,952,000
+
+33136*800 = 26,508,800
+
+33136*80 = 2,650,880
+
+33136*6 = 198,816
+
+Adding these together:
+
+231,952,000 + 26,508,800 = 258,460,800
+
+258,460,800 + 2,650,880 = 261,111,680
+
+261,111,680 + 198,816 = 261,310,496
+
+Therefore, 33136*7,886 = 261,310,496
+
+Now, divide that by 32,557:
+
+261,310,496 ÷32,557. Let's compute this division.
+
+32,557 *8,000=260,456,000
+
+Subtract from 261,310,496: 261,310,496 -260,456,000=854,496
+
+Now, 32,557*26=846,482
+
+Subtract:854,496 -846,482=8,014
+
+So, 261,310,496 ÷32,557=8,000 +26 +8,014/32,557=8,026 +8,014/32,557
+
+Therefore, x=33136*4 +8,026 +8,014/32,557=132,544 +8,026=140,570 +8,014/32,557. Which matches our previous result. Therefore, the exact value is 140,570 +8,014/32,557≈140,570.246.
+
+Thus, after multiple methods and verifications, the value of x is approximately 140,570.25. Therefore, the answer is \boxed{140570.25}. However, considering the problem might expect the fractional answer, but since that's complicated, the decimal is acceptable. Alternatively, if an exact fraction is required, it's 4576545504/32557, but that's a huge number. Given the options, the decimal is more practical.
+
+**Final Answer**
+
+The value of x is \boxed{140570.25}.
+
+To solve the proportion  
+32557
+33136
+ = 
+138114
+x
+ , we start by cross-multiplying to get:
+
+33136×138114=32557×x
+Next, we solve for x by dividing both sides by 32557:
+
+x= 
+32557
+33136×138114
+ 
+First, we calculate the product in the numerator:
+
+33136×138114=4576545504
+Then, we divide this product by 32557:
+
+x= 
+32557
+4576545504
+ 
+Performing the division, we find that:
+
+32557
+4576545504
+ ≈140570.25
+After verifying the calculations and considering the context of the problem, we conclude that the value of x is approximately:
+
+140570.25
+`;
+
+/* single sentence to preserve */
+let chosenSentence = "like asking a question to hear the shape of its echo yes the shape of the echo and what of the echo does it repeat the sound or the memory of sound or the sound of memory repeating itself until memory is nothing but repetition repeating itself to fill the empty shape of what it once was";
+
+let tokens = referenceText
+  .trim()
+  .split(/\s+/)
+  .map(t => t.toLowerCase());
+
+/* remove the chosen sentence tokens so we can insert them later intact */
+let chosenArr = chosenSentence.split(/\s+/);
+function removeChosenSentence() {
+  let indicesToRemove = [];
+  let i = 0;
+  while (i < tokens.length - chosenArr.length + 1) {
+    let slice = tokens.slice(i, i + chosenArr.length);
+    if (slice.join(" ") === chosenArr.join(" ")) {
+      for (let j = i; j < i + chosenArr.length; j++) {
+        indicesToRemove.push(j);
+      }
+      break;
+    }
+    i++;
+  }
+  if (indicesToRemove.length > 0) {
+    tokens = tokens.filter((_, idx) => !indicesToRemove.includes(idx));
+  }
+}
+removeChosenSentence();
+
+/* group tokens in random single, bigram, trigram chunks */
+function groupTokensRandomly(array) {
+  let result = [];
+  let i = 0;
+  while (i < array.length) {
+    let groupSize = Math.ceil(Math.random() * 3);
+    let chunk = array.slice(i, i + groupSize);
+    result.push(chunk.join(" "));
+    i += groupSize;
+  }
+  return result;
+}
+
+let scrambledArray = groupTokensRandomly(tokens);
+
+/* insert the chosen sentence in the approximate midpoint */
+let midPoint = Math.floor(scrambledArray.length / 3);
+scrambledArray.splice(midPoint, 0, chosenSentence);
+
+let container = document.getElementById("text-container");
+let numTrail = document.getElementById("numTrail");
+
+/* random hue & saturation for each token; use the --text-l from the mode */
+function randomHS() {
+  return {
+    h: Math.floor(Math.random() * 360),
+    s: Math.floor(40 + Math.random() * 60), 
+  };
+}
+
+/* create and style each token */
+scrambledArray.forEach(fragment => {
+  let div = document.createElement("div");
+  div.classList.add("token");
+  div.textContent = fragment;
+
+  let {h, s} = randomHS();
+  div.style.setProperty("--h", h);
+  div.style.setProperty("--s", s + "%");
+
+  let fontSize = (1 + Math.random() * 1.5).toFixed(1) + "em";
+  div.style.fontSize = fontSize;
+  container.appendChild(div);
+});
+
+/* on scroll: highlight tokens, create random numeric trail in random coords */
+window.addEventListener("scroll", handleScroll);
+
+function handleScroll() {
+  let tokensOnPage = document.querySelectorAll(".token");
+  let windowHeight = window.innerHeight;
+  
+  tokensOnPage.forEach((tk) => {
+    let rect = tk.getBoundingClientRect();
+    if (rect.top >= windowHeight * 0.25 && rect.bottom <= windowHeight * 0.75) {
+      tk.classList.add("active");
+    } else {
+      tk.classList.remove("active");
+    }
+  });
+  
+  createNumericTrail();
+}
+
+function createNumericTrail() {
+  let num = document.createElement("div");
+  num.className = "num";
+  num.textContent = Math.floor(Math.random() * 9999);
+  
+  let x = Math.random() * window.innerWidth;
+  let y = Math.random() * window.innerHeight;
+  num.style.left = x + "px";
+  num.style.top = y + "px";
+  
+  numTrail.appendChild(num);
+  
+  setTimeout(() => {
+    if (numTrail.contains(num)) {
+      numTrail.removeChild(num);
+    }
+  }, 2000);
+}
+
+/* toggle theme event */
+let toggleBtn = document.getElementById("toggle-theme");
+toggleBtn.addEventListener("click", () => {
+  document.body.classList.toggle("dark-mode");
+});
+</script>
+</body>
+</html>

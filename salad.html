@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Word Salad</title>
+        <style>
+            body {
+                margin: 0;
+                padding: 0;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                font-size: .75rem;
+                height: 100vh;
+                background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+                font-family: Arial, sans-serif;
+                overflow: hidden;
+            }
+
+            h1 {
+                color: #ff0000;
+                text-align: center;
+                font-size: 3.5rem;
+                margin-top: 20px;
+                left: 10px;
+            }
+
+            p {
+                font-size: 12rem;
+            }
+
+            #poetry-container {
+                width: 90%;
+                height: 90%;
+                display: flex;
+                flex-wrap: wrap;
+                align-items: center;
+                justify-content: center;
+                position: relative;
+            }
+
+            .word {
+                position: absolute;
+                font-size: 5rem;
+                color: rgba(255, 255, 255, 0.7);
+                transition: transform 0.5s ease, opacity 1s ease;
+                cursor: pointer;
+            }
+
+            .word:hover {
+                color: #ffcc00;
+                transform: scale(10) rotate(100deg) rotate(300deg);
+            }
+
+            .word.hidden {
+                opacity: 0;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Word Salad</h1>
+        <div id="poetry-container"></div>
+        <script>
+            const words = [
+                { text: "I", frequency: 124 },
+                { text: "our", frequency: 72 },
+                { text: "you", frequency: 24 },
+                { text: "american", frequency: 21 },
+                { text: "nation", frequency: 20 },
+                { text: "america", frequency: 20 },
+                { text: "great", frequency: 17 },
+                { text: "all", frequency: 17 },
+                { text: "country", frequency: 17 },
+                { text: "my", frequency: 16 },
+                { text: "not", frequency: 16 },
+                { text: "thank", frequency: 14 },
+                { text: "state", frequency: 12 },
+                { text: "govern", frequency: 11 },
+                { text: "today", frequency: 10 },
+                { text: "back", frequency: 10 },
+                { text: "world", frequency: 10 },
+                { text: "go", frequency: 9 },
+                { text: "very", frequency: 9 },
+                { text: "year", frequency: 9 },
+                { text: "president", frequency: 9 },
+                { text: "never", frequency: 9 },
+                { text: "no", frequency: 9 },
+                { text: "now", frequency: 9 },
+                { text: "every", frequency: 9 },
+                { text: "any", frequency: 8 },
+                { text: "end", frequency: 8 },
+                { text: "more", frequency: 8 },
+                { text: "like", frequency: 8 },
+                { text: "bring", frequency: 8 },
+                { text: "citizen", frequency: 8 },
+                { text: "unite", frequency: 8 },
+                { text: "person", frequency: 8 },
+                { text: "day", frequency: 7 },
+                { text: "many", frequency: 7 },
+                { text: "one", frequency: 7 },
+                { text: "dream", frequency: 7 },
+                { text: "new", frequency: 7 },
+                { text: "panama", frequency: 6 },
+                { text: "ever", frequency: 6 },
+                { text: "free", frequency: 6 },
+                { text: "most", frequency: 6 },
+                { text: "store", frequency: 6 },
+                { text: "power", frequency: 6 },
+                { text: "other", frequency: 6 },
+                { text: "right", frequency: 6 },
+                { text: "your", frequency: 5 },
+                { text: "also", frequency: 5 },
+                { text: "immediate", frequency: 5 },
+                { text: "order", frequency: 5 },
+                { text: "recent", frequency: 5 },
+                { text: "win", frequency: 5 },
+                { text: "build", frequency: 5 },
+                { text: "change", frequency: 5 },
+                { text: "come", frequency: 5 },
+                { text: "justice", frequency: 5 },
+                { text: "time", frequency: 5 },
+                { text: "foreign", frequency: 5 },
+                { text: "together", frequency: 5 }
+            ];
+
+            const container = document.getElementById("poetry-container");
+
+            function createWords() {
+                words.forEach(({ text, frequency }) => {
+                    const word = document.createElement("span");
+                    word.classList.add("word");
+                    word.textContent = text;
+                    word.style.fontSize = `${frequency / 1.5}px`;
+                    word.style.top = `${Math.random() * 90}vh`;
+                    word.style.left = `${Math.random() * 90}vw`;
+
+                    word.addEventListener("click", () => {
+                        word.classList.add("hidden");
+                        setTimeout(() => {
+                            word.style.top = `${Math.random() * 90}vh`;
+                            word.style.left = `${Math.random() * 90}vw`;
+                            word.classList.remove("hidden");
+                        }, 2000);
+                    });
+
+                    container.appendChild(word);
+                });
+            }
+
+            createWords();
+        </script>
+    </body>
+</html>
